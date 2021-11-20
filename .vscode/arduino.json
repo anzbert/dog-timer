@@ -1,0 +1,6 @@
+{
+    "sketch": "dogtimer_v2.ino",
+    "board": "arduino:avr:micro",
+    "programmer": "AVRISP mkII",
+    "port": "COM5"
+}
