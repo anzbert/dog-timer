@@ -8,6 +8,15 @@ What a great opportunity to make good use of a Microcontroller to make a (hopefu
 
 ## Challenges
 
-- Storing and releasing larger food items like Kongs, as well as small kibbles and feeding appropriate amounts.
+- Storing and releasing larger food items like Kongs, as well as small kibbles is a mechanical challenge.
 
-- Translating 
+- Translating an electrical signal to some kind of latch or rotator to dispense food
+
+- Creating an easy to use UI with display
+
+- Separate voltage power delivery for the micro controller and the mechanics
+
+## Solution
+
+### Materials
+
