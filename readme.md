@@ -19,6 +19,8 @@ What a great opportunity to make good use of a Microcontroller to make a (hopefu
 ## Solution
 
 ### Materials
+
+#### Timer
 - 1x Arduino Pro Micro (Leonardo)
 - 1x Project Box
 - 1x SSD1306 Display
@@ -29,6 +31,13 @@ What a great opportunity to make good use of a Microcontroller to make a (hopefu
 - 1x 12v to 5v transformer
 - 1x 12v power supply
 - 1x 3.5mm socket
-- 1x barrel plug socket
+- 1x Barrel plug socket
 - 1x USB-B Female to Micro USB Male Panel Mount Adapter
+- 1x Midi DIN Socket
 
+#### Food Dispenser
+- 1x Midi DIN Socket
+- 2x 12v Solenoids
+- 2x Plastic Flower Pots
+- 2x Hinges 
+- Wood / Cables / Bolts / Cable Ties / Chain & Hook
