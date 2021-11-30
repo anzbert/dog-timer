@@ -102,7 +102,6 @@ byte buttonState;
 // SOLENOIDS
 
 // Define Pins
-#define SOLENOID_BELL 4  // BELL
 #define SOLENOID_RIGHT 7 // RIGHT SOLENOID (not installed yet)
 #define SOLENOID_LEFT 8  // LEFT SOLENOID
 #define EXT_TRIGGER 15
@@ -121,12 +120,15 @@ boolean checkTimer = false;
 char runIndicator[4] = {45, 92, 124, 47};
 byte count4 = 0;
 
+// solenoids and trigger
+byte primedTrigger[4] = {0, 0, 0, 0}; // triggers that are ready to fire
+
+///////////////////////////////
+// MENU ITEMS
+
 unsigned int menuItem[6] = {}; // array containing timervalues (RIGHT, LEFT, DIS, Rep times, Rep interval, BELL)
 unsigned int currentItem = 0;  // currently active menuitem
 boolean selectToggle = false;
-
-// solenoids and trigger
-byte primedTrigger[4] = {0, 0, 0, 0}; // triggers that are ready to fire
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////// @note SETUP
@@ -140,7 +142,6 @@ void setup()
   rotary.setErrorDelay(0);    // basic error correction function for high speeds - DEFAULT is 200ms // Off is 0
 
   // set solenoid pins
-  pinMode(SOLENOID_BELL, OUTPUT);  // BELL
   pinMode(SOLENOID_RIGHT, OUTPUT); // RIGHT
   pinMode(SOLENOID_LEFT, OUTPUT);  // LEFT
   pinMode(EXT_TRIGGER, OUTPUT);
@@ -157,9 +158,9 @@ void setup()
   drawLogo(1500); // Draw the logo, followed by a delay of specified time
 
   // Wait until button is pressed
-  // while (rotary.push() == 0)
-  // {
-  // }
+  while (rotary.push() == 0)
+  {
+  }
 
   setDefault();   // set all default startup values
   refresh = true; // Show initial menu
@@ -574,7 +575,7 @@ void runTimer(void)
     checkTimer = true;
   }
 
-// checkTimers after each minute
+  // checkTimers after each minute
   if (checkTimer == true)
   {
     // check 0-2 timers
@@ -603,8 +604,6 @@ void runTimer(void)
     }
     checkTimer = false;
   }
-
-
 
   refresh = true;
 }
