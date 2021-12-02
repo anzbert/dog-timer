@@ -392,7 +392,6 @@ void setDefault()
   menuItem[2] = 0; // dispenser
   menuItem[3] = 0; // dispenser repeat
   menuItem[4] = 5; // dispenser repeat interval
-  menuItem[5] = 2; // bell Off / L&R / ALL
   timerState = 0;
   currentItem = 0;
   selectToggle = false;
