@@ -129,11 +129,11 @@ bool primedTrigger[3] = {false, false, false}; // triggers that are ready to fir
 ///////////////////////////////
 // MENU ITEMS
 
-#define MENU_RIGHT 0
-#define MENU_LEFT 1
-#define MENU_DISPENSER 2
-#define MENU_RESET 3
-#define MENU_REPEAT 4
+#define RIGHT 0
+#define LEFT 1
+#define DISPENSER 2
+#define RESET 3
+#define REPEATS 4
 
 #define MENU_RIGHT_VALUE 10
 #define MENU_LEFT_VALUE 11
@@ -144,7 +144,7 @@ bool primedTrigger[3] = {false, false, false}; // triggers that are ready to fir
 #define MENU_START 5
 
 unsigned int menuItemValue[5] = {}; // array containing timervalues (RIGHT, LEFT, DIS, Rep times, Rep interval)
-unsigned int currentItem = MENU_RIGHT;
+unsigned int currentItem = RIGHT;
 
 boolean selectToggle = false;
 
@@ -205,18 +205,18 @@ void loop()
       {
         currentItem++;
         // if repeater is off skip interval and add another
-        if (currentItem == MENU_REPEAT && menuItemValue[MENU_RESET] == 0)
+        if (currentItem == REPEATS && menuItemValue[RESET] == 0)
         {
           currentItem++;
         }
         refresh = true;
       }
 
-      if (encState == ENC_RIGHT && currentItem > MENU_RIGHT)
+      if (encState == ENC_RIGHT && currentItem > RIGHT)
       {
         currentItem--;
         // if repeater is off skip interval and subtract another 1
-        if (currentItem == MENU_REPEAT && menuItemValue[MENU_RESET] == 0)
+        if (currentItem == REPEATS && menuItemValue[RESET] == 0)
         {
           currentItem--;
         }
@@ -295,9 +295,9 @@ void loop()
         }
 
         // make sure repeat interval is at least 1
-        if (menuItemValue[MENU_REPEAT] < 1)
+        if (menuItemValue[REPEATS] < 1)
         {
-          menuItemValue[MENU_REPEAT] = 1;
+          menuItemValue[REPEATS] = 1;
         }
 
         break;
@@ -336,7 +336,7 @@ void loop()
       checkTimer = false;
 
       // primeSolenoids and trigger with timer of more than 0
-      for (int i = MENU_RIGHT; i <= MENU_DISPENSER; i++)
+      for (int i = RIGHT; i <= DISPENSER; i++)
       {
         if (menuItemValue[i] > 0)
         {
@@ -434,69 +434,69 @@ void drawMenu(void)
 
   // From 3rd line on in BLUE
   // right
-  invertFontIfSelected(MENU_RIGHT);
+  invertFontIfSelected(RIGHT);
   display.print(F("Right     "));
   // right time
   invertFontIfSelected(MENU_RIGHT_VALUE);
-  if (menuItemValue[MENU_RIGHT] == 0)
+  if (menuItemValue[RIGHT] == 0)
   {
     display.println("Off");
   }
   else
   {
-    HhMmDisplay(MENU_RIGHT);
+    HhMmDisplay(RIGHT);
   }
   // left
-  invertFontIfSelected(MENU_LEFT);
+  invertFontIfSelected(LEFT);
   display.print(F("Left      "));
   // left time
   invertFontIfSelected(MENU_LEFT_VALUE);
-  if (menuItemValue[MENU_LEFT] == 0)
+  if (menuItemValue[LEFT] == 0)
   {
     display.println("Off");
   }
   else
   {
-    HhMmDisplay(MENU_LEFT);
+    HhMmDisplay(LEFT);
   }
 
   // Reoccuring
-  invertFontIfSelected(MENU_DISPENSER);
+  invertFontIfSelected(DISPENSER);
   display.print(F("Dispenser "));
 
   // Reoccuring time
   invertFontIfSelected(MENU_DISPENSER_VALUE);
-  if (menuItemValue[MENU_DISPENSER] == 0 && menuItemValue[MENU_RESET] == 0)
+  if (menuItemValue[DISPENSER] == 0 && menuItemValue[RESET] == 0)
   {
     display.println("Off");
   }
   else
   {
-    HhMmDisplay(MENU_DISPENSER);
+    HhMmDisplay(DISPENSER);
   }
 
   // Repeater setting
-  invertFontIfSelected(MENU_RESET);
+  invertFontIfSelected(RESET);
   display.print(F(" ^Reset "));
   // Repeater option
   invertFontIfSelected(MENU_RESET_VALUE);
-  if (menuItemValue[MENU_RESET] == 0)
+  if (menuItemValue[RESET] == 0)
   {
     display.print("  Off");
   }
   else
   {
-    display.print(menuItemValue[MENU_RESET]);
+    display.print(menuItemValue[RESET]);
     display.print("x ");
   }
 
   // repeat INTERVAL
-  if (menuItemValue[MENU_RESET] != 0)
+  if (menuItemValue[RESET] != 0)
   {
-    invertFontIfSelected(MENU_REPEAT);
+    invertFontIfSelected(REPEATS);
     display.print(F("To "));
     invertFontIfSelected(MENU_REPEAT_VALUE);
-    HhMmDisplay(MENU_REPEAT);
+    HhMmDisplay(REPEATS);
   }
   else
   {
@@ -567,12 +567,12 @@ void runTimer(void)
         menuItemValue[i]--;
       }
 
-      if (menuItemValue[i] == 0) // WHEN A TIMER reaches 0
+      if (menuItemValue[i] <= 0 && primedTrigger[i] == true) // WHEN A TIMER reaches 0
       {
         triggerSolenoid(i); // trigger a primed solenoid
 
         // check if repeater timer on 2 will need to be restarted after firing
-        if (i == 2)
+        if (i == DISPENSER)
         {
           if (menuItemValue[3] > 0) // check number of remaining repeats
           {
@@ -594,8 +594,8 @@ void triggerSolenoid(int x)
 {
   if (primedTrigger[x] == true)
   {
-    // Serial.print("Triggering ");
-    // Serial.println(x);
+    Serial.print("Triggering ");
+    Serial.println(x);
     switch (x)
     {
       // RIGHT
@@ -624,6 +624,13 @@ void triggerSolenoid(int x)
   }
   // un-prime the trigger
   primedTrigger[x] = false;
+  for (int i = 0; i < 3; i++)
+  {
+    Serial.print("primed: ");
+    Serial.print(i);
+    Serial.print(" is ");
+    Serial.println(primedTrigger[i]);
+  }
 }
 
 void HhMmDisplay(int x)
