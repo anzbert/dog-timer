@@ -105,8 +105,8 @@ byte buttonState;
 // SOLENOIDS
 
 // Define Pins
-#define SOLENOID_RIGHT 8 // RIGHT SOLENOID (not installed yet)
-#define SOLENOID_LEFT 4  // LEFT SOLENOID
+#define SOLENOID_RIGHT 4 // RIGHT SOLENOID (not installed yet)
+#define SOLENOID_LEFT 8  // LEFT SOLENOID
 #define EXT_TRIGGER 15
 
 ///////////////////////////////
