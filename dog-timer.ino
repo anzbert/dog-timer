@@ -98,6 +98,9 @@ SimpleRotary rotary(1, 0, 5);
 byte encState;
 byte buttonState;
 
+#define ENC_LEFT 1
+#define ENC_RIGHT 2
+
 ////////////////////////////////
 // SOLENOIDS
 
@@ -126,8 +129,14 @@ byte primedTrigger[4] = {0, 0, 0, 0}; // triggers that are ready to fire
 ///////////////////////////////
 // MENU ITEMS
 
+#define MENU_RIGHT 0
+#define MENU_LEFT 1
+#define MENU_DISPENSER 2
+#define MENU_RESET 3
+#define MENU_START 4
+
 unsigned int menuItem[6] = {}; // array containing timervalues (RIGHT, LEFT, DIS, Rep times, Rep interval, BELL)
-unsigned int currentItem = 0;  // currently active menuitem
+unsigned int currentItem = MENU_RIGHT;
 boolean selectToggle = false;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +190,7 @@ void loop()
 
     if (selectToggle == false) // switch between menu items when no selection has been made
     {
-      if (encState == 1 && currentItem < 6)
+      if (encState == ENC_LEFT && currentItem < MENU_START)
       {
         currentItem++;
         // if repeater is off skip interval
@@ -192,7 +201,7 @@ void loop()
         refresh = true;
       }
 
-      if (encState == 2 && currentItem > 0)
+      if (encState == ENC_RIGHT && currentItem > MENU_RIGHT)
       {
         currentItem--;
         // if repeater is off skip interval
@@ -222,20 +231,7 @@ void loop()
           refresh = true;
         }
         break;
-      // BELL on/off
-      case 15:
-        if (encState == 1 && menuItem[currentItem - 10] < 2)
-        {
-          menuItem[currentItem - 10]++;
-          refresh = true;
-        }
 
-        if (encState == 2 && menuItem[currentItem - 10] > 0)
-        {
-          menuItem[currentItem - 10]--;
-          refresh = true;
-        }
-        break;
       default: // select a time on a timeslot
         // WHEN SMALLER THAN INTERVAL GO IN MINUTE STEPS
         // menuItem + 10 is always the value within an item ... have to -10 to access correct array entry
