@@ -102,8 +102,8 @@ byte buttonState;
 // SOLENOIDS
 
 // Define Pins
-#define SOLENOID_RIGHT 7 // RIGHT SOLENOID (not installed yet)
-#define SOLENOID_LEFT 8  // LEFT SOLENOID
+#define SOLENOID_RIGHT 8 // RIGHT SOLENOID (not installed yet)
+#define SOLENOID_LEFT 4  // LEFT SOLENOID
 #define EXT_TRIGGER 15
 
 ///////////////////////////////
@@ -616,15 +616,9 @@ void triggerSolenoid(int x)
     //ring bell if turned on
     if (x <= 1 && menuItem[5] > 0) // when set to L/R (1)
     {
-      digitalWrite(SOLENOID_BELL, 1); // activate
-      delay(500);
-      digitalWrite(SOLENOID_BELL, 0); // deactivate
     }
     if (x == 2 && menuItem[5] == 2) // when set to ALL (2)
     {
-      digitalWrite(SOLENOID_BELL, 1); // activate
-      delay(500);
-      digitalWrite(SOLENOID_BELL, 0); // deactivate
     }
     // Serial.print("Triggering ");
     // Serial.println(x);
