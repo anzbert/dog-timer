@@ -133,9 +133,17 @@ byte primedTrigger[4] = {0, 0, 0, 0}; // triggers that are ready to fire
 #define MENU_LEFT 1
 #define MENU_DISPENSER 2
 #define MENU_RESET 3
-#define MENU_START 4
+#define MENU_REPEAT 4
 
-unsigned int menuItem[6] = {}; // array containing timervalues (RIGHT, LEFT, DIS, Rep times, Rep interval, BELL)
+#define MENU_RIGHT_VALUE 10
+#define MENU_LEFT_VALUE 11
+#define MENU_DISPENSER_VALUE 12
+#define MENU_RESET_VALUE 13
+#define MENU_REPEAT_VALUE 14
+
+#define MENU_START 5
+
+unsigned int menuItemValue[5] = {}; // array containing timervalues (RIGHT, LEFT, DIS, Rep times, Rep interval)
 unsigned int currentItem = MENU_RIGHT;
 boolean selectToggle = false;
 
@@ -188,13 +196,15 @@ void loop()
     // ENCODER
     encState = rotary.rotate();
 
-    if (selectToggle == false) // switch between menu items when no selection has been made
+    ///////////////////////////////
+    // switch between menu items when no selection has been made
+    if (selectToggle == false)
     {
       if (encState == ENC_LEFT && currentItem < MENU_START)
       {
         currentItem++;
-        // if repeater is off skip interval
-        if (currentItem == 4 && menuItem[3] == 0)
+        // if repeater is off skip interval and add another
+        if (currentItem == MENU_REPEAT && menuItemValue[MENU_REPEAT] == 0)
         {
           currentItem++;
         }
@@ -204,8 +214,8 @@ void loop()
       if (encState == ENC_RIGHT && currentItem > MENU_RIGHT)
       {
         currentItem--;
-        // if repeater is off skip interval
-        if (currentItem == 4 && menuItem[3] == 0)
+        // if repeater is off skip interval and subtract another 1
+        if (currentItem == MENU_REPEAT && menuItemValue[MENU_REPEAT] == 0)
         {
           currentItem--;
         }
@@ -218,65 +228,65 @@ void loop()
     {
       switch (currentItem)
       {
-      case 13: // repeat times selector
-        if (encState == 1 && menuItem[currentItem - 10] < 99)
+      case MENU_RESET_VALUE: // repeat times selector
+        if (encState == ENC_LEFT && menuItemValue[currentItem - 10] < 50)
         {
-          menuItem[currentItem - 10]++;
+          menuItemValue[currentItem - 10]++;
           refresh = true;
         }
 
-        if (encState == 2 && menuItem[currentItem - 10] > 0)
+        if (encState == ENC_RIGHT && menuItemValue[currentItem - 10] > 0)
         {
-          menuItem[currentItem - 10]--;
+          menuItemValue[currentItem - 10]--;
           refresh = true;
         }
         break;
 
       default: // select a time on a timeslot
         // WHEN SMALLER THAN INTERVAL GO IN MINUTE STEPS
-        // menuItem + 10 is always the value within an item ... have to -10 to access correct array entry
+        // menuItemValue + 10 is always the value within an item ... have to -10 to access correct array entry
         // remainder to determine if a turn needs to shift the value to the nearest interval setting
-        if (encState == 1 && menuItem[currentItem - 10] <= interval)
+        if (encState == ENC_LEFT && menuItemValue[currentItem - 10] <= interval)
         {
-          menuItem[currentItem - 10]++;
+          menuItemValue[currentItem - 10]++;
           refresh = true;
         }
-        if (encState == 2 && menuItem[currentItem - 10] <= interval)
+        if (encState == ENC_RIGHT && menuItemValue[currentItem - 10] <= interval)
         {
-          if (menuItem[currentItem - 10] > 0)
+          if (menuItemValue[currentItem - 10] > 0)
           {
-            menuItem[currentItem - 10]--;
+            menuItemValue[currentItem - 10]--;
           }
           refresh = true;
         }
 
-        if (encState == 1 && menuItem[currentItem - 10] > interval)
+        if (encState == ENC_LEFT && menuItemValue[currentItem - 10] > interval)
         { // clockwise
-          int remainder = menuItem[currentItem - 10] % interval;
+          int remainder = menuItemValue[currentItem - 10] % interval;
           if (remainder == 0)
           {
-            menuItem[currentItem - 10] = menuItem[currentItem - 10] + interval;
+            menuItemValue[currentItem - 10] = menuItemValue[currentItem - 10] + interval;
           }
           else
           {
-            menuItem[currentItem - 10] = menuItem[currentItem - 10] + interval - remainder;
+            menuItemValue[currentItem - 10] = menuItemValue[currentItem - 10] + interval - remainder;
           }
           refresh = true;
         }
 
-        if (encState == 2 && menuItem[currentItem - 10] > interval)
+        if (encState == ENC_RIGHT && menuItemValue[currentItem - 10] > interval)
 
         { // anti clockwise
-          if (menuItem[currentItem - 10] > 0)
+          if (menuItemValue[currentItem - 10] > 0)
           {
-            int remainder = menuItem[currentItem - 10] % interval;
+            int remainder = menuItemValue[currentItem - 10] % interval;
             if (remainder == 0)
             {
-              menuItem[currentItem - 10] = menuItem[currentItem - 10] - interval;
+              menuItemValue[currentItem - 10] = menuItemValue[currentItem - 10] - interval;
             }
             else
             {
-              menuItem[currentItem - 10] = menuItem[currentItem - 10] - remainder;
+              menuItemValue[currentItem - 10] = menuItemValue[currentItem - 10] - remainder;
             }
           }
 
@@ -284,9 +294,9 @@ void loop()
         }
 
         // make sure repeat interval is at least 1
-        if (menuItem[4] < 1)
+        if (menuItemValue[MENU_REPEAT] < 1)
         {
-          menuItem[4] = 1;
+          menuItemValue[MENU_REPEAT] = 1;
         }
 
         break;
@@ -295,7 +305,7 @@ void loop()
 
     // BUTTON
     buttonState = rotary.push();
-    if (buttonState == 1 && currentItem != 6) // 6 is the start button
+    if (buttonState == 1 && currentItem != MENU_START) // 6 is the start button
     {
       selectToggle = !selectToggle;
       switch (selectToggle)
@@ -317,7 +327,7 @@ void loop()
       }
     }
     // when pushing button on START
-    if (buttonState == 1 && currentItem == 6)
+    if (buttonState == 1 && currentItem == MENU_START)
     {
       // turn timer on
       timerState = 1;
@@ -325,9 +335,9 @@ void loop()
       checkTimer = false;
 
       // primeSolenoids and trigger with timer of more than 0
-      for (int i = 0; i < 3; i++)
+      for (int i = MENU_RIGHT; i <= MENU_DISPENSER; i++)
       {
-        if (menuItem[i] > 0)
+        if (menuItemValue[i] > 0)
         {
           primedTrigger[i] = 1;
         }
@@ -335,11 +345,6 @@ void loop()
         {
           primedTrigger[i] = 0;
         }
-      }
-      // prime dispenser when reoccuring timer is set... even when dispenser timer is initially 0
-      if (menuItem[3] > 0)
-      {
-        primedTrigger[2] = 1;
       }
       // capture time when timer was started, or restarted
       startTime = millis();
@@ -383,11 +388,11 @@ void loop()
 
 void setDefault()
 {
-  menuItem[0] = 0; // RIGHT
-  menuItem[1] = 0; // LEFT
-  menuItem[2] = 0; // dispenser
-  menuItem[3] = 0; // dispenser repeat
-  menuItem[4] = 5; // dispenser repeat interval
+  menuItemValue[0] = 0; // RIGHT
+  menuItemValue[1] = 0; // LEFT
+  menuItemValue[2] = 0; // dispenser
+  menuItemValue[3] = 0; // dispenser repeat
+  menuItemValue[4] = 5; // dispenser repeat interval
   timerState = 0;
   currentItem = 0;
   selectToggle = false;
@@ -432,7 +437,7 @@ void drawMenu(void)
   display.print(F("Right     "));
   // right time
   checkIfSelected(10);
-  if (menuItem[0] == 0)
+  if (menuItemValue[0] == 0)
   {
     display.println("Off");
   }
@@ -445,7 +450,7 @@ void drawMenu(void)
   display.print(F("Left      "));
   // left time
   checkIfSelected(11);
-  if (menuItem[1] == 0)
+  if (menuItemValue[1] == 0)
   {
     display.println("Off");
   }
@@ -460,7 +465,7 @@ void drawMenu(void)
 
   // Reoccuring time
   checkIfSelected(12);
-  if (menuItem[2] == 0 && menuItem[3] == 0)
+  if (menuItemValue[2] == 0 && menuItemValue[3] == 0)
   {
     display.println("Off");
   }
@@ -474,18 +479,18 @@ void drawMenu(void)
   display.print(F(" ^Reset "));
   // Repeater option
   checkIfSelected(13);
-  if (menuItem[3] == 0)
+  if (menuItemValue[3] == 0)
   {
     display.print("  Off");
   }
   else
   {
-    display.print(menuItem[3]);
+    display.print(menuItemValue[3]);
     display.print("x ");
   }
 
   // repeat INTERVAL
-  if (menuItem[3] != 0)
+  if (menuItemValue[3] != 0)
   {
     checkIfSelected(4);
     display.print(F("To "));
@@ -496,39 +501,19 @@ void drawMenu(void)
   {
     display.println();
   }
-  // BELL when triggering
-  checkIfSelected(5);
-  display.print(F("Bell      "));
-  // on / off
-  checkIfSelected(15);
-  switch (menuItem[5])
-  {
-  case 0:
-    display.println(F("Off"));
-    break;
-  case 1:
-    display.println(F("R&L only"));
-    break;
-  case 2:
-    display.println(F("All Timers"));
-    break;
-  default:
-    display.println(F("error"));
-    break;
-  }
   // START BUTTON
   if (timerState == 0)
   {
     display.setTextColor(WHITE);
     display.print(F("      - "));
-    checkIfSelected(6);
+    checkIfSelected(5);
     display.print(F("START"));
     display.setTextColor(WHITE);
     display.print(F(" -      "));
   }
   if (timerState == 1)
   {
-    checkIfSelected(6);
+    checkIfSelected(5);
     display.print(F("      - STOP! -      "));
   }
 
@@ -546,7 +531,7 @@ void runTimer(void)
   timerDone = true;
   for (int i = 0; i < 4; i++)
   {
-    if (menuItem[i] != 0)
+    if (menuItemValue[i] != 0)
     {
       timerDone = false;
     }
@@ -574,25 +559,25 @@ void runTimer(void)
   if (checkTimer == true)
   {
     // check 0-2 timers
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i <= 2; i++)
     {
-      if (menuItem[i] > 0)
+      if (menuItemValue[i] > 0)
       {
-        menuItem[i]--;
+        menuItemValue[i]--;
       }
 
-      if (menuItem[i] == 0) // WHEN A TIMER reaches 0
+      if (menuItemValue[i] == 0) // WHEN A TIMER reaches 0
       {
         triggerSolenoid(i); // trigger a primed solenoid
 
         // check if repeater timer on 2 will need to be restarted after firing
         if (i == 2)
         {
-          if (menuItem[3] > 0) // check number of remaining repeats
+          if (menuItemValue[3] > 0) // check number of remaining repeats
           {
-            menuItem[3]--;             // reduce repeat timer by one
-            menuItem[2] = menuItem[4]; // restart dispenser timer on 3 with value from 4
-            primedTrigger[2] = 1;      // reprime trigger for dispenser
+            menuItemValue[3]--;                  // reduce repeat timer by one
+            menuItemValue[2] = menuItemValue[4]; // restart dispenser timer on 3 with value from 4
+            primedTrigger[2] = 1;                // reprime trigger for dispenser
           }
         }
       }
@@ -608,13 +593,6 @@ void triggerSolenoid(int x)
 {
   if (primedTrigger[x] == 1)
   {
-    //ring bell if turned on
-    if (x <= 1 && menuItem[5] > 0) // when set to L/R (1)
-    {
-    }
-    if (x == 2 && menuItem[5] == 2) // when set to ALL (2)
-    {
-    }
     // Serial.print("Triggering ");
     // Serial.println(x);
     switch (x)
@@ -622,13 +600,13 @@ void triggerSolenoid(int x)
       // RIGHT
     case 0:
       digitalWrite(SOLENOID_RIGHT, 1); // activate
-      delay(2000);
+      delay(1500);
       digitalWrite(SOLENOID_RIGHT, 0); // deactivate
       break;
       // LEFT
     case 1:
       digitalWrite(SOLENOID_LEFT, 1); // activate
-      delay(2000);
+      delay(1500);
       digitalWrite(SOLENOID_LEFT, 0); // deactivate
       break;
       // Dispenser
@@ -649,12 +627,12 @@ void triggerSolenoid(int x)
 
 void HhMmDisplay(int x)
 {
-  if (menuItem[x] >= 60)
+  if (menuItemValue[x] >= 60)
   {
-    display.print(menuItem[x] / 60);
+    display.print(menuItemValue[x] / 60);
     display.print("h ");
   }
-  display.print(menuItem[x] % 60);
+  display.print(menuItemValue[x] % 60);
   display.println("m");
 }
 
